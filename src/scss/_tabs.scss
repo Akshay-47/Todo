@@ -1,0 +1,14 @@
+.tab-section {
+  ul {
+    display: flex;
+    justify-content: center;
+    li {
+      margin: 1em;
+      list-style: none;
+      display: inline-flex;
+      padding: 1em;
+      border: 1px solid black;
+      border-radius: 5%;
+    }
+  }
+}

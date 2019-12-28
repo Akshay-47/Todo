@@ -1,0 +1,14 @@
+$stripe-color: #dadada;
+
+table {
+  width: 100%;
+  text-align: center;
+  tr {
+    &:hover {
+      background-color: darken($color: $stripe-color, $amount: 15%);
+    }
+  }
+}
+.complete {
+  text-decoration: line-through;
+}
