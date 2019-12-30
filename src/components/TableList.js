@@ -4,10 +4,20 @@ import { connect } from "react-redux";
 import Button from "./Button";
 import EditForm from "./Form";
 import Modal from "./Modal";
+import TableRow from "./TableRow";
 
-import { deleteTodo, reOpenTodo, markDone } from "../store/todo";
+import { deleteTodo, reOpenTodo, markDone, editTodo } from "../store/todo";
+import { setFormToEdit, clearFormToEdit } from "../store/formEdit";
 
-const TableList = ({ todos, deleteTodo, reOpenTodo, markDone }) => {
+const TableList = ({
+  todos,
+  deleteTodo,
+  reOpenTodo,
+  markDone,
+  setFormToEdit,
+  clearFormToEdit,
+  editTodo
+}) => {
   const [editModalIsOpen, setEditModalIsOpen] = useState(false);
   const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
@@ -34,11 +44,13 @@ const TableList = ({ todos, deleteTodo, reOpenTodo, markDone }) => {
   };
 
   const handleEdit = postId => {
+    setFormToEdit(postId);
     setEditModalIsOpen(true);
   };
 
   const onEditDismiss = () => {
     setEditModalIsOpen(false);
+    clearFormToEdit();
   };
 
   const openDescriptionModal = postId => {
@@ -73,73 +85,26 @@ const TableList = ({ todos, deleteTodo, reOpenTodo, markDone }) => {
     }
   };
 
-  const renderTableRow = todos => {
-    return todos.map((todo, index) => (
-      <tr key={index} onClick={e => handleTableRowClick(e, todo.id)}>
-        <td
-          className={
-            "table-data " + (todo.currentState ? "complete" : "in-complete")
-          }
-        >
-          {todo.title}
-        </td>
-        <td
-          className={
-            "table-data " + (todo.currentState ? "complete" : "in-complete")
-          }
-        >
-          {todo.priority}
-        </td>
-        <td
-          className={
-            "table-data " + (todo.currentState ? "complete" : "in-complete")
-          }
-        >
-          {todo.createdAt}
-        </td>
-        <td
-          className={
-            "table-data " + (todo.currentState ? "complete" : "in-complete")
-          }
-        >
-          {todo.dueDate}
-        </td>
-        <td
-          className={
-            "table-data " + (todo.currentState ? "complete" : "in-complete")
-          }
-        >
-          {actions(todo.currentState)}
-        </td>
-      </tr>
-    ));
-  };
-
-  const actions = currentState => {
-    if (currentState)
-      return (
-        <div className="todo-item action">
-          <Button name={"Re-Open"} class_="re-open" />
-        </div>
-      );
-    return (
-      <div className="todo-item action">
-        <Button name="Edit" class_="edit" />
-        <Button name="Delete" class_="delete" />
-        <Button name="Done" class_="done" />
-      </div>
-    );
-  };
-
   return (
     <>
-      <tbody>{renderTableRow(todos)}</tbody>
+      <tbody>
+        <TableRow handleTableRowClick={handleTableRowClick} />
+      </tbody>
       <Modal
         show={editModalIsOpen}
         onDismiss={onEditDismiss}
         title="Edit"
-        content={<EditForm />}
-        actions={<Button name="Save" />}
+        content={
+          <EditForm
+            type="edit"
+            handleCancel={onEditDismiss}
+            handleFormSubmit={res => {
+              console.log(res);
+              editTodo(res);
+              onEditDismiss();
+            }}
+          />
+        }
       />
       <Modal
         show={deleteModalIsOpen}
@@ -187,7 +152,10 @@ const mapDispatchToProps = dispatch => {
   return {
     deleteTodo: postId => dispatch(deleteTodo(postId)),
     reOpenTodo: postId => dispatch(reOpenTodo(postId)),
-    markDone: postId => dispatch(markDone(postId))
+    markDone: postId => dispatch(markDone(postId)),
+    editTodo: postId => dispatch(editTodo(postId)),
+    setFormToEdit: postId => dispatch(setFormToEdit(postId)),
+    clearFormToEdit: postId => dispatch(clearFormToEdit(postId))
   };
 };
 

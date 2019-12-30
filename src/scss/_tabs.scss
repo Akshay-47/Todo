@@ -1,14 +1,22 @@
+$primary-color: #007bff;
+$secondary-color: #fff;
+
 .tab-section {
   ul {
-    display: flex;
-    justify-content: center;
+    text-align: center;
     li {
-      margin: 1em;
       list-style: none;
       display: inline-flex;
-      padding: 1em;
-      border: 1px solid black;
-      border-radius: 5%;
+    }
+  }
+  .tab-button {
+    background-color: $secondary-color;
+    color: $primary-color;
+    border: 1px solid $primary-color;
+    &.active {
+      background-color: $primary-color;
+      color: $secondary-color;
+      border: $secondary-color;
     }
   }
 }

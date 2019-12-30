@@ -16,7 +16,7 @@ const AddTodo = ({ addTodo }) => {
   };
   return (
     <div className="add-todo">
-      <Button name="+" class="" onClick={() => setIsOpen(true)} />
+      <Button name="+" class_="todo-btn" onClick={() => setIsOpen(true)} />
       <Modal
         show={isOpen}
         title="Add Todo"
@@ -33,16 +33,10 @@ const AddTodo = ({ addTodo }) => {
   );
 };
 
-const mapStateToProps = state => {
-  return {
-    state
-  };
-};
-
 const mapDispatchToProps = dispatch => {
   return {
     addTodo: todo => dispatch(addTodo(todo))
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddTodo);
+export default connect(null, mapDispatchToProps)(AddTodo);

@@ -1,8 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Button from "./Button";
+import { connect } from "react-redux";
 
-const Form = ({ type, formId, handleFormSubmit, handleCancel }) => {
+const Form = ({
+  type,
+  formId,
+  handleFormSubmit,
+  handleCancel,
+  postIdToEdit,
+  posts
+}) => {
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState("");
   const [description, setDescription] = useState("");
@@ -10,28 +18,22 @@ const Form = ({ type, formId, handleFormSubmit, handleCancel }) => {
   const [selectedOption, setSelectedOption] = useState(false);
   const [priority, setPriority] = useState("none");
   const [dueDate, setDueDate] = useState("");
+  const [postToEdit, setPostToEdit] = useState(null);
+  const [createdAt, setCreatedAt] = useState(null);
   const handleOptionChange = ev => {
-    console.log(ev.target.value);
     setSelectedOption(ev.target.value);
   };
 
-  const getDate = () => {
-    const today = new Date();
-    return today.toISOString().substring(0, 10);
-  };
-
-  const handleSubmit = () => {
-    if (titleError === "" && descriptionError === "") {
-      const newTodo = {
-        id: Number(Date.now()),
-        currentState: selectedOption,
-        title,
-        description,
-        createdAt: getDate(),
-        dueDate,
-        priority
-      };
-      handleFormSubmit(newTodo);
+  const populateFields = () => {
+    if (postIdToEdit !== null) {
+      const post = getPostById(postIdToEdit);
+      setPostToEdit(post);
+      setTitle(post.title);
+      setDescription(post.description);
+      setPriority(post.priority);
+      setDueDate(post.dueDate);
+      setSelectedOption(post.currentState);
+      setCreatedAt(post.createdAt);
     }
   };
 
@@ -40,14 +42,52 @@ const Form = ({ type, formId, handleFormSubmit, handleCancel }) => {
     defaultFormType = 1;
   }
 
+  const getPostById = id => {
+    return posts.find(post => post.id === id);
+  };
+  useEffect(() => populateFields(), []);
+  const getDate = () => {
+    const today = new Date();
+    return today.toISOString().substring(0, 10);
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (defaultFormType === 0) {
+      if (titleError === "" && descriptionError === "") {
+        const newTodo = {
+          id: Number(Date.now()),
+          currentState: selectedOption,
+          title,
+          description,
+          createdAt: getDate(),
+          dueDate,
+          priority
+        };
+        handleFormSubmit(newTodo);
+      }
+    } else {
+      const newTodo = {
+        id: postToEdit.id,
+        currentState: selectedOption,
+        title,
+        description,
+        createdAt: postToEdit.createdAt,
+        dueDate,
+        priority
+      };
+      handleFormSubmit(newTodo);
+    }
+  };
+
   const actions = function() {
     return (
       <>
         <Button
           name="Save"
           class="submit"
-          type="submit"
-          onClick={e => handleSubmit()}
+          type="button"
+          onClick={e => handleSubmit(e)}
         />
         <Button name="Cancel" class="cancel" onClick={() => handleCancel()} />
       </>
@@ -98,43 +138,45 @@ const Form = ({ type, formId, handleFormSubmit, handleCancel }) => {
           ></textarea>
           <span className="error">{descriptionError}</span>
         </p>
-        <div className="current-state">
-          <label>
-            <span>Current State:</span>
-          </label>
-          <fieldset>
-            <p className="radio">
-              <input
-                type="radio"
-                value="true"
-                checked={selectedOption === true}
-                onChange={e => handleOptionChange(e)}
-                id="closed_task"
-              />
-              <label htmlFor="closed_task">
-                <span>Closed</span>
-              </label>
-            </p>
-            <p className="radio">
-              <input
-                type="radio"
-                value="false"
-                checked={selectedOption === false}
-                onChange={e => handleOptionChange(e)}
-                id="open_task"
-              />
-              <label htmlFor="open_task">
-                <span>Open</span>
-              </label>
-            </p>
-          </fieldset>
-        </div>
+        {defaultFormType === 1 && (
+          <div className="current-state">
+            <label>
+              <span>Current State:</span>
+            </label>
+            <fieldset>
+              <p className="radio">
+                <input
+                  type="radio"
+                  value="true"
+                  checked={selectedOption === true}
+                  onChange={e => handleOptionChange(e)}
+                  id="closed_task"
+                />
+                <label htmlFor="closed_task">
+                  <span>Closed</span>
+                </label>
+              </p>
+              <p className="radio">
+                <input
+                  type="radio"
+                  value="false"
+                  checked={selectedOption === false}
+                  onChange={e => handleOptionChange(e)}
+                  id="open_task"
+                />
+                <label htmlFor="open_task">
+                  <span>Open</span>
+                </label>
+              </p>
+            </fieldset>
+          </div>
+        )}
         {defaultFormType === 1 && (
           <p>
             <label>
               <span>Created At:</span>
             </label>
-            <span>Some Date</span>
+            <span>{createdAt}</span>
           </p>
         )}
         <p>
@@ -149,28 +191,34 @@ const Form = ({ type, formId, handleFormSubmit, handleCancel }) => {
             onChange={event => setDueDate(event.target.value)}
           />
         </p>
-        {defaultFormType === 1 && (
-          <p>
-            <label htmlFor="priority">
-              <span>Priority</span>
-            </label>
-            <select
-              id="priority"
-              value={priority}
-              name="priority"
-              onChange={e => setPriority(e.target.value)}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="none">None</option>
-            </select>
-          </p>
-        )}
+
+        <p>
+          <label htmlFor="priority">
+            <span>Priority</span>
+          </label>
+          <select
+            id="priority"
+            value={priority}
+            name="priority"
+            onChange={e => setPriority(e.target.value)}
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="none">None</option>
+          </select>
+        </p>
         {actions()}
       </form>
     </div>
   );
 };
 
-export default Form;
+const mapStateToProps = state => {
+  return {
+    posts: state.todos,
+    postIdToEdit: state.formEdit
+  };
+};
+
+export default connect(mapStateToProps)(Form);
